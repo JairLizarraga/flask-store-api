@@ -1,21 +1,42 @@
-package com.ibm.flaskstoreapi.product;
+package com.ibm.flaskstoreapi.model;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class Product {
 
 	@Id
 	@GeneratedValue
+	@Column(name = "product_id")
 	private Integer productId;
 
+	@Column(name = "name")
 	private String name;
+	
+	@Column(name = "brand")
 	private String brand;
+	
+	@Column(name = "model")
 	private String model;
+	
+	@Column(name = "price")
 	private int price;
+	
+	@Column(name = "sku")
 	private String sku;
+
+	@OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+	@JsonIgnore
+	List<Stock> stock;
 	
 	public Product() {
 		
@@ -78,6 +99,14 @@ public class Product {
 
 	public void setSku(String sku) {
 		this.sku = sku;
+	}
+
+	public List<Stock> getStock() {
+		return stock;
+	}
+
+	public void setStock(List<Stock> stock) {
+		this.stock = stock;
 	}
 	
 	

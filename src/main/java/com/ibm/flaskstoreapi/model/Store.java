@@ -1,8 +1,15 @@
-package com.ibm.flaskstoreapi.store;
+package com.ibm.flaskstoreapi.model;
 
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 
 @Entity
 public class Store {
@@ -11,12 +18,27 @@ public class Store {
 	@GeneratedValue
 	private Integer storeId;
 	
+	@Column(name = "name")
 	private String name;
+	
+	@Column(name = "address")
 	private String address;
+	
+	@Column(name = "phone")
 	private String phone;
+	
+	@Column(name = "city")
 	private String city;
+	
+	@Column(name = "state")
 	private String state;
+	
+	@Column(name = "zip_code")
 	private String zipCode;
+	
+	@OneToMany(mappedBy = "store", cascade = CascadeType.ALL)
+	@JsonIgnore
+	List<Stock> stock;
 	
 	public Store() {
 	}
@@ -86,6 +108,14 @@ public class Store {
 
 	public void setZipCode(String zipCode) {
 		this.zipCode = zipCode;
+	}
+
+	public List<Stock> getStock() {
+		return stock;
+	}
+
+	public void setStock(List<Stock> stock) {
+		this.stock = stock;
 	}
 	
 	
