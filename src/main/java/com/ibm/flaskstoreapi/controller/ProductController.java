@@ -3,6 +3,8 @@ package com.ibm.flaskstoreapi.controller;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,32 +23,14 @@ import com.ibm.flaskstoreapi.repository.ProductRepository;
 public class ProductController {
 
 	private final ProductRepository productRepository;
-    
+
     public ProductController(ProductRepository productRepository) {
         this.productRepository = productRepository;
     }
 	
-	@PostMapping
-	public Product addProduct(@RequestBody Product product) {
-		return productRepository.save(product);
-	}
-	
-	@DeleteMapping("/{productId}")
-	public void deleteProduct(@PathVariable int productId) {
-		productRepository.deleteById(productId);
-	}
-	
-	@PutMapping("/{productId}")
-	public void updateProduct(@PathVariable int productId, @RequestBody Product product) {
-		if(productRepository.existsById(productId)) {
-			product.setProductId(productId);
-			productRepository.save(product);
-		}
-	}
-	
-	@GetMapping("/")
-	public List<Product> getProducts(){
-		return productRepository.findAll();
+	@GetMapping
+	public ResponseEntity<List<Product>> getProducts(){
+		return ResponseEntity.ok(productRepository.findAll());
 	}
 	
 	@GetMapping("/{productId}")
@@ -54,4 +38,32 @@ public class ProductController {
 		Optional<Product> product = productRepository.findById(productId);
 		return product.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
 	}
+	
+	@PostMapping
+	public ResponseEntity<Product> addProduct(@RequestBody Product product) {
+		return ResponseEntity.ok(productRepository.save(product));
+	}
+	
+	@DeleteMapping
+	public ResponseEntity<String> deleteProduct(@RequestBody Product product) {
+		try {
+			productRepository.deleteById(product.getProductId());
+			return ResponseEntity.ok("Product with ID: " + product.getProductId() + " deleted");
+	    } catch (EmptyResultDataAccessException e) {
+	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product with ID " + product.getProductId() + " not found");
+	    } catch (Exception e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting product: " + e.getMessage());
+	    }
+		
+	}
+	
+	@PutMapping
+	public ResponseEntity<String> updateProduct(@RequestBody Product product) {
+		if(productRepository.existsById(product.getProductId())) {
+			productRepository.save(product);
+			return ResponseEntity.status(HttpStatus.CREATED).body("Product with ID: " + product.getProductId() + " updated");
+		}
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
+	}
+	
 }
