@@ -60,7 +60,7 @@ public class StockController {
 	}
 	
     @PostMapping("/")
-    public Stock addStockToStore(@RequestBody StockDao stockDao) {
+    public ResponseEntity<Stock> addStockToStore(@RequestBody StockDao stockDao) {
     	Product product = productRepository.findById(stockDao.getProductId())
     	        .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + stockDao.getProductId()));
     	
@@ -68,7 +68,7 @@ public class StockController {
     	        .orElseThrow(() -> new EntityNotFoundException("Store not found with id: " + stockDao.getStoreId()));
     	
     	Stock stock = new Stock(store, product, stockDao.getQuantity());
-        return stockRepository.save(stock);
+        return ResponseEntity.ok(stockRepository.save(stock));
     }
    
 	@PutMapping("/")
