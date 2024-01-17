@@ -29,18 +29,18 @@ public class StoreController {
         this.storeRepository = productRepository;
     }
 	
-	@GetMapping
+	@GetMapping("/")
 	public ResponseEntity<List<Store>> getStores(){
 		return ResponseEntity.ok(storeRepository.findAll());
 	}
 	
-	@GetMapping("/{storeId}")
+	@GetMapping("/{storeId}/")
 	public ResponseEntity<Store> getStoreById(@PathVariable int storeId) {
 		Optional<Store> store = storeRepository.findById(storeId);
 		return store.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
 	}
 	
-	@PostMapping
+	@PostMapping("/")
 	public ResponseEntity<String> addStore(@RequestBody Store store) {
 		try {
 			storeRepository.save(store);
@@ -53,7 +53,7 @@ public class StoreController {
 		
 	}
 
-	@PutMapping
+	@PutMapping("/")
 	public ResponseEntity<String> updateStore(@RequestBody Store store) {
 		if(storeRepository.existsById(store.getStoreId())) {
 			storeRepository.save(store);
@@ -62,7 +62,7 @@ public class StoreController {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Store with ID " + store.getStoreId() + " not found");
 	}
 	
-	@DeleteMapping
+	@DeleteMapping("/")
 	public ResponseEntity<String> deleteStore(@RequestBody Store store) {
 	    Optional<Store> existingStore = storeRepository.findById(store.getStoreId());
 

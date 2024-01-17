@@ -39,17 +39,17 @@ public class StockController {
         this.productRepository = productRepository;
 	}
 	
-	@GetMapping
+	@GetMapping("/")
 	public ResponseEntity<List<Stock>> getStockAvailableInAllStores(){
 		return ResponseEntity.ok(stockRepository.findAll());
 	}
 	 
-	@GetMapping("/store_id/{storeId}")
+	@GetMapping("/store_id/{storeId}/")
 	public List<Stock> getStockAvailableInStore(@PathVariable int storeId){
 		return stockRepository.findByStore(storeRepository.findById(storeId).get());
 	}
 	
-	@GetMapping("/store_id/{storeId}/product_id/{productId}")
+	@GetMapping("/store_id/{storeId}/product_id/{productId}/")
 	public ResponseEntity<Integer> getProductAvailabilityInStore(@PathVariable int storeId, @PathVariable int productId) {
 		try{
 			Stock stock = getStock(storeId, productId);
@@ -59,7 +59,7 @@ public class StockController {
 		}
 	}
 	
-    @PostMapping
+    @PostMapping("/")
     public Stock addStockToStore(@RequestBody StockDao stockDao) {
     	Product product = productRepository.findById(stockDao.getProductId())
     	        .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + stockDao.getProductId()));
@@ -71,7 +71,7 @@ public class StockController {
         return stockRepository.save(stock);
     }
    
-	@PutMapping
+	@PutMapping("/")
 	public ResponseEntity<Stock> updateProductInStore(@RequestBody StockDao stock) {
 	    try {
 	        Stock stockToBeUpdated = getStock(stock.getStoreId(), stock.getProductId());
@@ -83,7 +83,7 @@ public class StockController {
 	    }
 	}
 
-	@DeleteMapping
+	@DeleteMapping("/")
 	public ResponseEntity<String> deleteProductFromStore(@RequestBody StockDao stockDao) {
 		Optional<Stock> stockToBeDeleted = stockRepository.findByStore_StoreIdAndProduct_ProductId(stockDao.getStoreId(), stockDao.getProductId());
 		
@@ -99,8 +99,5 @@ public class StockController {
 		Optional<Stock> stock = stockRepository.findByStore_StoreIdAndProduct_ProductId(storeId, productId);
 		return stock.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Stock not found"));
 	}
-	
-	
-
 	
 }

@@ -33,18 +33,18 @@ public class ProductController {
 		return ResponseEntity.ok(productRepository.findAll());
 	}
 	
-	@GetMapping("/{productId}")
+	@GetMapping("/{productId}/")
 	public ResponseEntity<Product> getProductById(@PathVariable int productId) {
 		Optional<Product> product = productRepository.findById(productId);
 		return product.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
 	}
 	
-	@PostMapping
+	@PostMapping("/")
 	public ResponseEntity<Product> addProduct(@RequestBody Product product) {
 		return ResponseEntity.ok(productRepository.save(product));
 	}
 	
-	@PutMapping
+	@PutMapping("/")
 	public ResponseEntity<String> updateProduct(@RequestBody Product product) {
 		if(productRepository.existsById(product.getProductId())) {
 			productRepository.save(product);
@@ -53,7 +53,7 @@ public class ProductController {
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
 	}
 	
-	@DeleteMapping
+	@DeleteMapping("/")
 	public ResponseEntity<String> deleteProduct(@RequestBody Product product) {
 		try {
 			productRepository.deleteById(product.getProductId());
