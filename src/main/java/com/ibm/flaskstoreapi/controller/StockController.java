@@ -39,31 +39,14 @@ public class StockController {
         this.productRepository = productRepository;
 	}
 	
-	@GetMapping("/")
+	@GetMapping
 	public ResponseEntity<List<Stock>> getStockAvailableInAllStores(){
 		return ResponseEntity.ok(stockRepository.findAll());
 	}
-	
-    @PostMapping("/")
-    public Stock addStockToStore(@RequestBody StockDao stockDao) {
-    	Product product = productRepository.findById(stockDao.getProductId())
-    	        .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + stockDao.getProductId()));
-    	
-    	Store store = storeRepository.findById(stockDao.getStoreId())
-    	        .orElseThrow(() -> new EntityNotFoundException("Store not found with id: " + stockDao.getStoreId()));
-    	
-    	Stock stock = new Stock(store, product, stockDao.getQuantity());
-        return stockRepository.save(stock);
-    }
-    
+	 
 	@GetMapping("/store_id/{storeId}")
 	public List<Stock> getStockAvailableInStore(@PathVariable int storeId){
 		return stockRepository.findByStore(storeRepository.findById(storeId).get());
-	}
-	
-	private Stock getStock(int storeId, int productId) {
-		Optional<Stock> stock = stockRepository.findByStore_StoreIdAndProduct_ProductId(storeId, productId);
-		return stock.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Stock not found"));
 	}
 	
 	@GetMapping("/store_id/{storeId}/product_id/{productId}")
@@ -76,7 +59,19 @@ public class StockController {
 		}
 	}
 	
-	@PutMapping("/update")
+    @PostMapping
+    public Stock addStockToStore(@RequestBody StockDao stockDao) {
+    	Product product = productRepository.findById(stockDao.getProductId())
+    	        .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + stockDao.getProductId()));
+    	
+    	Store store = storeRepository.findById(stockDao.getStoreId())
+    	        .orElseThrow(() -> new EntityNotFoundException("Store not found with id: " + stockDao.getStoreId()));
+    	
+    	Stock stock = new Stock(store, product, stockDao.getQuantity());
+        return stockRepository.save(stock);
+    }
+   
+	@PutMapping
 	public ResponseEntity<Stock> updateProductInStore(@RequestBody StockDao stock) {
 	    try {
 	        Stock stockToBeUpdated = getStock(stock.getStoreId(), stock.getProductId());
@@ -98,8 +93,14 @@ public class StockController {
 	    } else {
 	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Stock not found");
 	    }
-		
-		
 	}
+    
+	private Stock getStock(int storeId, int productId) {
+		Optional<Stock> stock = stockRepository.findByStore_StoreIdAndProduct_ProductId(storeId, productId);
+		return stock.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Stock not found"));
+	}
+	
+	
+
 	
 }

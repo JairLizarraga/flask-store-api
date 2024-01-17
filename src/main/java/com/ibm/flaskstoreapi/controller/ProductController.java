@@ -44,6 +44,15 @@ public class ProductController {
 		return ResponseEntity.ok(productRepository.save(product));
 	}
 	
+	@PutMapping
+	public ResponseEntity<String> updateProduct(@RequestBody Product product) {
+		if(productRepository.existsById(product.getProductId())) {
+			productRepository.save(product);
+			return ResponseEntity.status(HttpStatus.CREATED).body("Product with ID: " + product.getProductId() + " updated");
+		}
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
+	}
+	
 	@DeleteMapping
 	public ResponseEntity<String> deleteProduct(@RequestBody Product product) {
 		try {
@@ -57,13 +66,5 @@ public class ProductController {
 		
 	}
 	
-	@PutMapping
-	public ResponseEntity<String> updateProduct(@RequestBody Product product) {
-		if(productRepository.existsById(product.getProductId())) {
-			productRepository.save(product);
-			return ResponseEntity.status(HttpStatus.CREATED).body("Product with ID: " + product.getProductId() + " updated");
-		}
-		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product not found");
-	}
-	
+
 }
