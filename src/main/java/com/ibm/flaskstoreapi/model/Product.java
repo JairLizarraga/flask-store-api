@@ -1,5 +1,6 @@
 package com.ibm.flaskstoreapi.model;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -10,6 +11,9 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 
 @Entity
 public class Product {
@@ -17,8 +21,11 @@ public class Product {
 	@Id
 	@GeneratedValue
 	@Column(name = "product_id")
+	@NotNull
 	private Integer productId;
 
+	@NotNull
+	@Size(max = 255) // Set the maximum length as needed
 	@Column(name = "name")
 	private String name;
 	
@@ -28,8 +35,9 @@ public class Product {
 	@Column(name = "model")
 	private String model;
 	
+	@Positive
 	@Column(name = "price")
-	private int price;
+	private BigDecimal price;
 	
 	@Column(name = "sku")
 	private String sku;
@@ -42,7 +50,7 @@ public class Product {
 		
 	}
 
-	public Product(Integer productId, String name, String brand, String model, int price, String sku) {
+	public Product(Integer productId, String name, String brand, String model, BigDecimal price, String sku) {
 		this.productId = productId;
 		this.name = name;
 		this.brand = brand;
@@ -85,11 +93,11 @@ public class Product {
 		this.model = model;
 	}
 
-	public int getPrice() {
+	public BigDecimal getPrice() {
 		return price;
 	}
 
-	public void setPrice(int price) {
+	public void setPrice(BigDecimal price) {
 		this.price = price;
 	}
 
