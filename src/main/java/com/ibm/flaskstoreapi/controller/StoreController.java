@@ -1,7 +1,6 @@
 package com.ibm.flaskstoreapi.controller;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -16,62 +15,61 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ibm.flaskstoreapi.model.Store;
-import com.ibm.flaskstoreapi.repository.StoreRepository;
+import com.ibm.flaskstoreapi.service.StoreService;
 
-
+import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/store/")
 public class StoreController {
 
-	private final StoreRepository storeRepository;
-    
-    public StoreController(StoreRepository productRepository) {
-        this.storeRepository = productRepository;
+    private final StoreService storeService;
+
+    public StoreController(StoreService storeService) {
+        this.storeService = storeService;
     }
-	
-	@GetMapping("/")
-	public ResponseEntity<List<Store>> getStores(){
-		return ResponseEntity.ok(storeRepository.findAll());
-	}
-	
-	@GetMapping("/{storeId}/")
-	public ResponseEntity<Store> getStoreById(@PathVariable int storeId) {
-		Optional<Store> store = storeRepository.findById(storeId);
-		return store.map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
-	}
-	
-	@PostMapping("/")
-	public ResponseEntity<String> addStore(@RequestBody Store store) {
-		try {
-			storeRepository.save(store);
-			return ResponseEntity.status(HttpStatus.CREATED).body("Product added to the store");	
-		} catch (DataIntegrityViolationException e) {
-			return ResponseEntity.status(HttpStatus.CONFLICT).body("Data integrity violation: " + e.getMessage());
-		} catch (Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving store: " + e.getMessage());
-		}
-		
-	}
 
-	@PutMapping("/")
-	public ResponseEntity<String> updateStore(@RequestBody Store store) {
-		if(storeRepository.existsById(store.getStoreId())) {
-			storeRepository.save(store);
-			return ResponseEntity.status(HttpStatus.CREATED).body("Store data updated");
-		}
-		return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Store with ID " + store.getStoreId() + " not found");
-	}
-	
-	@DeleteMapping("/")
-	public ResponseEntity<String> deleteStore(@RequestBody Store store) {
-	    Optional<Store> existingStore = storeRepository.findById(store.getStoreId());
+    @GetMapping("/")
+    public ResponseEntity<List<Store>> getStores() {
+        return ResponseEntity.ok(storeService.getStores());
+    }
 
-	    if (existingStore.isPresent()) {
-	        storeRepository.delete(store);
-	        return ResponseEntity.ok("Store deleted successfully");
-	    } else {
-	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Store with ID " + store.getStoreId() + " not found");
-	    }
-	}
+    @GetMapping("/{storeId}/")
+    public ResponseEntity<Store> getStoreById(@PathVariable int storeId) {
+        return storeService.getStoreById(storeId)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
+    @PostMapping("/")
+    public ResponseEntity<String> addStore(@Valid @RequestBody Store store) {
+        try {
+            storeService.addStore(store);
+            return ResponseEntity.status(HttpStatus.CREATED).body("Store added successfully");
+        } catch (DataIntegrityViolationException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Data integrity violation: " + e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding store: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/")
+    public ResponseEntity<String> updateStore(@Valid @RequestBody Store store) {
+        String updateResult = storeService.updateStore(store);
+        if (updateResult != null) {
+            return ResponseEntity.ok(updateResult);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
+    @DeleteMapping("/{storeId}/")
+    public ResponseEntity<String> deleteStore(@PathVariable int storeId) {
+        String deleteResult =  storeService.deleteStore(storeService.getStoreById(storeId).get());
+        if (deleteResult != null) {
+            return ResponseEntity.ok(deleteResult);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 }
