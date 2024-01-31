@@ -5,10 +5,18 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
 @Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Product {
 
     @Id
@@ -39,78 +47,5 @@ public class Product {
     @JsonIgnore
     private List<Stock> stock;
 
-    
-    
-    
-	public Product() {
-	}
 
-	public Product(@NotNull Integer productId, @NotNull @Size(max = 255) String name, String brand, String model,
-			@Positive Integer price, String sku, List<Stock> stock) {
-		this.productId = productId;
-		this.name = name;
-		this.brand = brand;
-		this.model = model;
-		this.price = price;
-		this.sku = sku;
-		this.stock = stock;
-	}
-
-	public Integer getProductId() {
-		return productId;
-	}
-
-	public void setProductId(Integer productId) {
-		this.productId = productId;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	public String getBrand() {
-		return brand;
-	}
-
-	public void setBrand(String brand) {
-		this.brand = brand;
-	}
-
-	public String getModel() {
-		return model;
-	}
-
-	public void setModel(String model) {
-		this.model = model;
-	}
-
-	public Integer getPrice() {
-		return price;
-	}
-
-	public void setPrice(Integer price) {
-		this.price = price;
-	}
-
-	public String getSku() {
-		return sku;
-	}
-
-	public void setSku(String sku) {
-		this.sku = sku;
-	}
-
-	public List<Stock> getStock() {
-		return stock;
-	}
-
-	public void setStock(List<Stock> stock) {
-		this.stock = stock;
-	}
-    
-    
 }

@@ -8,8 +8,16 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Stock {
 
 	@Id
@@ -30,46 +38,11 @@ public class Stock {
 	@Column(name = "quantity")
 	@Min(0)
 	private int quantity;
-	
-	public Stock() {
-		
-	}
-	
-	public Stock(Store store, Product product, int quantity) {
-		this.store = store;
-		this.product = product;
-		this.quantity = quantity;
-	}
-	
-	public Integer getStockId() {
-		return stockId;
-	}
-	public void setStockId(Integer stockId) {
-		this.stockId = stockId;
-	}
-	public Store getStore() {
-		return store;
-	}
-	public void setStore(Store store) {
-		this.store= store;
-	}
-	public Product getProduct() {
-		return product;
-	}
-	public void setProduct(Product product) {
-		this.product = product;
-	}
-	public int getQuantity() {
-		return quantity;
-	}
-	public void setQuantity(int quantity) {
-		this.quantity = quantity;
-	}
 
-	@Override
-	public String toString() {
-		return "Stock [stockId=" + stockId + ", product=" + product + ", store=" + store + ", quantity=" + quantity
-				+ "]";
+	public Stock(Store store, Product product, int quantity) {
+	    this.store = store;
+	    this.product = product;
+	    this.quantity = quantity;
 	}
 
 	
