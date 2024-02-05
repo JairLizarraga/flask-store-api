@@ -1,7 +1,5 @@
 package com.ibm.flaskstoreapi.controller;
 
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -18,7 +16,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.web.servlet.MockMvc;
@@ -41,8 +38,6 @@ import com.ibm.flaskstoreapi.model.DAO.StockDao;
 import com.ibm.flaskstoreapi.repository.ProductRepository;
 import com.ibm.flaskstoreapi.repository.StockRepository;
 import com.ibm.flaskstoreapi.repository.StoreRepository;
-
-import jakarta.validation.constraints.AssertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class StockControllerTest {

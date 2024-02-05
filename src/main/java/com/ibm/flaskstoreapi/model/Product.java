@@ -26,7 +26,7 @@ public class Product {
     private Integer productId;
 
     @NotNull
-    @Size(max = 255)
+    @Size(max = 2)
     @Column(name = "name")
     private String name;
 

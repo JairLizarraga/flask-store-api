@@ -1,6 +1,7 @@
 package com.ibm.flaskstoreapi.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -30,14 +31,23 @@ public class StoreController {
 
     @GetMapping("/")
     public ResponseEntity<List<Store>> getStores() {
-        return ResponseEntity.ok(storeService.getStores());
+        try{
+        	return ResponseEntity.ok(storeService.getStores());
+        } catch(Exception e) {
+        	return ResponseEntity.internalServerError().build();
+        }
+        
     }
 
     @GetMapping("/{storeId}/")
     public ResponseEntity<Store> getStoreById(@PathVariable int storeId) {
-        return storeService.getStoreById(storeId)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    	try {
+            return storeService.getStoreById(storeId)
+                    .map(ResponseEntity::ok)
+                    .orElse(ResponseEntity.notFound().build());
+    	} catch(Exception e) {
+    		return ResponseEntity.internalServerError().build();
+    	}
     }
 
     @PostMapping("/")
@@ -54,22 +64,30 @@ public class StoreController {
 
     @PutMapping("/")
     public ResponseEntity<String> updateStore(@Valid @RequestBody Store store) {
-        String updateResult = storeService.updateStore(store);
-        if (updateResult != null) {
-            return ResponseEntity.ok(updateResult);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    	return storeService.getStoreById(store.getStoreId())
+    		.map(savedStore -> {
+    			savedStore.setAddress(store.getAddress());
+    			savedStore.setCity(store.getCity());
+    			savedStore.setName(store.getName());
+    			savedStore.setPhone(store.getPhone());
+    			savedStore.setState(store.getState());
+    			savedStore.setZipCode(store.getZipCode());
+    			return ResponseEntity.ok("Updated successfully");
+    		})
+    		.orElse(ResponseEntity.notFound().build());
+    	
     }
 
 
     @DeleteMapping("/{storeId}/")
     public ResponseEntity<String> deleteStore(@PathVariable int storeId) {
-        String deleteResult =  storeService.deleteStore(storeService.getStoreById(storeId).get());
-        if (deleteResult != null) {
-            return ResponseEntity.ok(deleteResult);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+    	
+    	Optional<Store> storeById = storeService.getStoreById(storeId);
+    	if(storeById.isPresent()) {
+    		return ResponseEntity.ok(storeService.deleteStore(storeService.getStoreById(storeId).get()));
+    	} else {
+    		return ResponseEntity.notFound().build();
+    	}
+    	
     }
 }

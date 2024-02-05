@@ -11,7 +11,7 @@ public interface StoreService {
 
     List<Store> getStores();
     Optional<Store> getStoreById(int storeId);
-    String addStore(@Valid Store store);
+    Store addStore(@Valid Store store);
     String updateStore(@Valid Store store);
     String deleteStore(@Valid Store store);
 }

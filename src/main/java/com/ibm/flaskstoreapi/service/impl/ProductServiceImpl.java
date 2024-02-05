@@ -10,7 +10,6 @@ import com.ibm.flaskstoreapi.model.Product;
 import com.ibm.flaskstoreapi.repository.ProductRepository;
 import com.ibm.flaskstoreapi.service.ProductService;
 
-import io.swagger.v3.oas.annotations.servers.Server;
 import jakarta.validation.Valid;
 
 @Service
@@ -34,7 +33,11 @@ public class ProductServiceImpl implements ProductService{
 
 	@Override
 	public Product addProduct(@Valid Product product) {
-		return productRepository.save(product);
+		try {
+			return productRepository.save(product);
+		} catch (Exception e) {
+			throw new RuntimeException("Failed to save product", e);
+		}
 	}
 
 	@Override

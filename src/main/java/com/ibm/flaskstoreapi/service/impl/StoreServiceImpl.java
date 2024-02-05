@@ -3,7 +3,7 @@ package com.ibm.flaskstoreapi.service.impl;
 import java.util.List;
 import java.util.Optional;
 
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Service;
 
 import com.ibm.flaskstoreapi.model.Store;
@@ -32,14 +32,11 @@ public class StoreServiceImpl implements StoreService{
 	}
 
 	@Override
-	public String addStore(Store store) {
+	public Store addStore(Store store) {
 		try {
-			storeRepository.save(store);
-			return "Product added to the store";	 
-		} catch (DataIntegrityViolationException e) {
-			return "Data integrity violation: ";
+			return storeRepository.save(store); 
 		} catch (Exception e) {
-			return "Error saving store: ";
+			throw new RuntimeException("Failed to save product", e);
 		}
 		
 	}
@@ -55,14 +52,14 @@ public class StoreServiceImpl implements StoreService{
 
 	@Override
 	public String deleteStore(@Valid Store store) {
-	    Optional<Store> existingStore = storeRepository.findById(store.getStoreId());
-
-	    if (existingStore.isPresent()) {
-	        storeRepository.delete(store);
-	        return "Store deleted successfully";
-	    } else {
-	        return "Store with ID " + store.getStoreId() + " not found";
-	    }
+		try {
+			storeRepository.findById(store.getStoreId());
+			return "Store with ID " + store.getStoreId() + " deleted";
+		} catch (EmptyResultDataAccessException e) {
+			return "Product with ID " + store.getStoreId() + " not found";
+		}	catch (Exception e) {
+			return "Error deleting product: " + e.getMessage();
+		}
 	}
 	
 	

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ibm.flaskstoreapi.model.Product;
+import com.ibm.flaskstoreapi.model.Stock;
 import com.ibm.flaskstoreapi.service.ProductService;
 
 import jakarta.validation.Valid;
@@ -31,7 +32,12 @@ public class ProductController {
 
 	@GetMapping
 	public ResponseEntity<List<Product>> getProducts(){
-		return ResponseEntity.ok(productService.getProducts());
+		try{
+			return ResponseEntity.ok(productService.getProducts());
+		} catch(Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		
 	}
 	
 	@GetMapping("/{productId}/")
@@ -44,7 +50,12 @@ public class ProductController {
 	
 	@PostMapping("/")
 	public ResponseEntity<Product> addProduct(@Valid @RequestBody Product product) {
-		return ResponseEntity.ok(productService.addProduct(product));
+	    try {
+	        Product savedProduct = productService.addProduct(product);
+	        return ResponseEntity.ok(savedProduct);
+	    } catch (RuntimeException e) {
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	    }
 	}
 	
 	@PutMapping("/")
@@ -58,10 +69,11 @@ public class ProductController {
 	                savedProduct.setSku(product.getSku());
 	                savedProduct.setStock(product.getStock());
 	                productService.addProduct(savedProduct);
-	    			return ResponseEntity.status(HttpStatus.CREATED).body("Product with ID: " + product.getProductId() + " updated");
+	                return ResponseEntity.ok("Updated successfully"); // Set the response body here
 	            })
 	            .orElse(ResponseEntity.notFound().build());
 	}
+
 
 	@DeleteMapping("/")
 	public ResponseEntity<String> deleteProduct(@Valid @RequestBody Product product) {
@@ -74,5 +86,20 @@ public class ProductController {
 		}		
 	}
 	
+	@GetMapping("/test")
+	public Product getaProduct() {
+
+	    Product prod = Product.builder()
+	            .productId(1001)
+	            .name(null)
+	            .brand("brand")
+	            .model("model")
+	            .price(1001)
+	            .sku("sku")
+	            .stock(List.of(new Stock()))
+	            .build();
+	    
+		return productService.addProduct(prod);
+	}
 
 }
