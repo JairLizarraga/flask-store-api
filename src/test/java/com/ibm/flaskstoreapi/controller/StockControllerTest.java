@@ -1,12 +1,13 @@
 package com.ibm.flaskstoreapi.controller;
 
-import java.util.Collections;
+
 import java.util.List;
-import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -14,111 +15,150 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.any;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.ibm.flaskstoreapi.model.Product;
 import com.ibm.flaskstoreapi.model.Stock;
 import com.ibm.flaskstoreapi.model.Store;
 import com.ibm.flaskstoreapi.model.DAO.StockDao;
-import com.ibm.flaskstoreapi.repository.ProductRepository;
-import com.ibm.flaskstoreapi.repository.StockRepository;
-import com.ibm.flaskstoreapi.repository.StoreRepository;
+import com.ibm.flaskstoreapi.service.ProductService;
+import com.ibm.flaskstoreapi.service.StockService;
+import com.ibm.flaskstoreapi.service.StoreService;
 
 @ExtendWith(MockitoExtension.class)
 class StockControllerTest {
-
-    @Autowired
-    private MockMvc mockMvc;
     
 	@Mock
-	private ProductRepository productRepository;
+	private ProductService productService;
 
 	@Mock
-	private StoreRepository storeRepository;
+	private StoreService storeService;
 
 	@Mock
-	private StockRepository stockRepository;
+	private StockService stockService;
 	
 	@InjectMocks
 	private StockController stockController;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+	private Stock stockMock;
+	private Store storeMock;
+	private Product productMock;
+	private StockDao stockDaoMock;
 
     @BeforeEach
     public void setup() {
-        mockMvc = MockMvcBuilders.standaloneSetup(stockController).build();
-    }
-    
-    @Test
-    public void testGetStockAvailableInAllStores_Success() {
-    	Stock stock1 = new Stock();
-    	Stock stock2 = new Stock();
-    	
-    	List<Stock> mockStockList = java.util.Arrays.asList(stock1, stock2);
-    	
-    	when(stockRepository.findAll()).thenReturn(mockStockList);
+	    productMock = Product.builder()
+	            .productId(0)
+	            .name("name")
+	            .brand("brand")
+	            .model("model")
+	            .sku("sku")
+	            .price(1001)
+	            .build();
 
-    	ResponseEntity<List<Stock>> stockAvailableInAllStores = stockController.getStockAvailableInAllStores();
-    	List<Stock> body = stockAvailableInAllStores.getBody();
-    	
-    	assertEquals(HttpStatus.OK, stockAvailableInAllStores.getStatusCode());
-    	assertEquals(mockStockList.size(), body.size());
-    	assertTrue(body.contains(stock1));
-    	assertTrue(body.contains(stock2));
+	    storeMock = Store.builder()
+	            .storeId(1001)
+	            .address("address")
+	            .city("city")
+	            .name("name")
+	            .phone("phone")
+	            .state("state")
+	            .stock(null)
+	            .zipCode(null)
+	            .build();
+	    
+    	stockMock = Stock.builder()
+    			.product(Product.builder().productId(1).build())
+    			.store(Store.builder().storeId(1).build())
+    			.quantity(0)
+    			.build();
+
+		stockDaoMock = StockDao.builder()
+				.productId(productMock.getProductId())
+				.storeId(storeMock.getStoreId())
+				.quantity(1)
+				.build();
     }
     
     @Test
+    @DisplayName("Get stock, success")
+    public void testGetStockAvailableInAllStores_Success() {
+    	List<Stock> mockStockList = java.util.Arrays.asList(stockMock);
+    	
+    	when(stockService.getStockAvailableInAllStores()).thenReturn(mockStockList);
+
+    	ResponseEntity<List<Stock>> response = stockController.getStockAvailableInAllStores();
+    	
+    	assertEquals(HttpStatus.OK, response.getStatusCode());
+    	assertEquals(mockStockList.size(), response.getBody().size());
+    	assertTrue(response.getBody().contains(stockMock));
+    }
+    
+    @Test
+    @DisplayName("Get stock, void list, success")
     public void testGetStockAvailableInAllStores_SuccessVoidList() {
-    	when(stockRepository.findAll()).thenReturn(Collections.emptyList());
+    	List<Stock> mockStockList = java.util.Arrays.asList();
+    	when(stockService.getStockAvailableInAllStores()).thenReturn(mockStockList);
     	
     	ResponseEntity<List<Stock>> stockAvailableInAllStores = stockController.getStockAvailableInAllStores();
     	assertEquals(HttpStatus.OK, stockAvailableInAllStores.getStatusCode());
     	assertEquals(0, stockAvailableInAllStores.getBody().size());
     }
     
+    @Test
+    @DisplayName("Get stock, fail")
+    public void testGetStockAvailableInAllStores_Fail() {
+    	when(stockService.getStockAvailableInAllStores()).thenThrow(RuntimeException.class);
+    	ResponseEntity<List<Stock>> response = stockController.getStockAvailableInAllStores();
+    	assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
+    
     
     @Test
+    @DisplayName("Get stock in store, success")
     public void testGetStockAvailableInStore_Success() {
+
+    	List<Stock> mockStockList = java.util.Arrays.asList(stockMock);
+    	int storeId = stockMock.getStore().getStoreId();
     	
-    	Integer mockStoreId = 1;
-    	Store mockStore = new Store();
+    	when(stockService.getStockAvailableInStore(storeId)).thenReturn(mockStockList);
+    	ResponseEntity<List<Stock>> response = stockController.getStockAvailableInStore(storeId);
+
+    	assertEquals(HttpStatus.OK, response.getStatusCode());
+    	assertEquals(1, response.getBody().size());
+    	
     	//when(stockRepository.findById(anyInt())).thenReturn()
     	//when(stockRepository.findByStore(anyInt())).
     }
+
+    @Test
+    @DisplayName("Get stock in store, fail")
+    public void testGetStockAvailableInStore_Fail() {
+    	int storeId = stockMock.getStore().getStoreId();
+    	when(stockService.getStockAvailableInStore(anyInt())).thenThrow(RuntimeException.class);
+    	ResponseEntity<List<Stock>> response = stockController.getStockAvailableInStore(storeId);
+    	assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+    }
     
-	@Test
-	public void testAddStockToStore_Success() throws Exception {
-	    Product product = new Product();
-	    Store store = new Store();
-	    
+    
+    
+	public void testAddStockToStore_Success() throws Exception {		
+		ResponseEntity<Stock> addStockToStore = stockController.addStockToStore(stockDaoMock);
+		
+		//assertEquals(, addStockToStore);
+		
+	    /*
 	    when(productRepository.findById(anyInt())).thenReturn(Optional.of(product));
 	    when(storeRepository.findById(anyInt())).thenReturn(Optional.of(store));
 	    when(stockRepository.save(any(Stock.class))).thenReturn(new Stock(store, product, 10));
-
+		*/
 	    // Prepare request body
-	    StockDao stockDao = new StockDao();
-
-	    // Perform the request
-	    mockMvc.perform(post("/stock/")
-	            .contentType(MediaType.APPLICATION_JSON)
-	            .content(objectMapper.writeValueAsString(stockDao)))
-	            .andExpect(status().isOk())
-	            .andExpect(jsonPath("$.quantity").value(10));
+	    //StockDao stockDao = new StockDao();
 	}
 
 

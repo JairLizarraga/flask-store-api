@@ -2,6 +2,8 @@ package com.ibm.flaskstoreapi.controller;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,12 +32,21 @@ public class StockController {
 
 	@GetMapping("/")
 	public ResponseEntity<List<Stock>> getStockAvailableInAllStores(){
-		return ResponseEntity.ok(stockService.getStockAvailableInAllStores());
+		try {
+			return ResponseEntity.ok(stockService.getStockAvailableInAllStores());
+		} catch(Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+		
 	}
 	 
 	@GetMapping("/store_id/{storeId}/")
-	public List<Stock> getStockAvailableInStore(@PathVariable int storeId){
-		return stockService.getStockAvailableInStore(storeId);
+	public ResponseEntity<List<Stock>> getStockAvailableInStore(@PathVariable int storeId){
+		try{
+			return ResponseEntity.ok(stockService.getStockAvailableInStore(storeId));
+		} catch (Exception e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 	
 	@GetMapping("/store_id/{storeId}/product_id/{productId}/")
