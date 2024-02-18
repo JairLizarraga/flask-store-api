@@ -3,7 +3,6 @@ package com.ibm.flaskstoreapi.controller;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ibm.flaskstoreapi.model.Stock;
-import com.ibm.flaskstoreapi.model.DAO.StockDao;
 import com.ibm.flaskstoreapi.service.StockService;
 
 import jakarta.validation.Valid;
@@ -55,18 +53,18 @@ public class StockController {
 	}
 	
     @PostMapping("/")
-    public ResponseEntity<Stock> addStockToStore(@Valid @RequestBody StockDao stockDao) {
-        return ResponseEntity.ok(stockService.addStockToStore(stockDao));
+    public ResponseEntity<Stock> addStockToStore(@Valid @RequestBody Stock stock) {
+        return ResponseEntity.ok(stockService.addStockToStore(stock));
     }
    
 	@PutMapping("/")
-	public ResponseEntity<Stock> updateProductInStore(@Valid @RequestBody StockDao stock) {
+	public ResponseEntity<Stock> updateProductInStore(@Valid @RequestBody Stock stock) {
 		return ResponseEntity.ok(stockService.updateProductInStore(stock));
 	}
 
 	@DeleteMapping("/")
-	public ResponseEntity<String> deleteProductFromStore(@Valid @RequestBody StockDao stockDao) {
-		return ResponseEntity.ok(stockService.deleteProductFromStore(stockDao));
+	public ResponseEntity<String> deleteProductFromStore(@Valid @RequestBody Stock stock) {
+		return ResponseEntity.ok(stockService.deleteProductFromStore(stock));
 	}
 	
 }

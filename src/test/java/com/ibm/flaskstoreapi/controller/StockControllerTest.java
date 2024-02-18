@@ -25,7 +25,6 @@ import static org.mockito.Mockito.when;
 import com.ibm.flaskstoreapi.model.Product;
 import com.ibm.flaskstoreapi.model.Stock;
 import com.ibm.flaskstoreapi.model.Store;
-import com.ibm.flaskstoreapi.model.DAO.StockDao;
 import com.ibm.flaskstoreapi.service.ProductService;
 import com.ibm.flaskstoreapi.service.StockService;
 import com.ibm.flaskstoreapi.service.StoreService;
@@ -48,7 +47,6 @@ class StockControllerTest {
 	private Stock stockMock;
 	private Store storeMock;
 	private Product productMock;
-	private StockDao stockDaoMock;
 
     @BeforeEach
     public void setup() {
@@ -78,9 +76,9 @@ class StockControllerTest {
     			.quantity(0)
     			.build();
 
-		stockDaoMock = StockDao.builder()
-				.productId(productMock.getProductId())
-				.storeId(storeMock.getStoreId())
+		stockMock = Stock.builder()
+				.product(productMock)
+				.store(storeMock)
 				.quantity(1)
 				.build();
     }
@@ -131,9 +129,6 @@ class StockControllerTest {
 
     	assertEquals(HttpStatus.OK, response.getStatusCode());
     	assertEquals(1, response.getBody().size());
-    	
-    	//when(stockRepository.findById(anyInt())).thenReturn()
-    	//when(stockRepository.findByStore(anyInt())).
     }
 
     @Test
@@ -145,21 +140,6 @@ class StockControllerTest {
     	assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
     }
     
-    
-    
-	public void testAddStockToStore_Success() throws Exception {		
-		ResponseEntity<Stock> addStockToStore = stockController.addStockToStore(stockDaoMock);
-		
-		//assertEquals(, addStockToStore);
-		
-	    /*
-	    when(productRepository.findById(anyInt())).thenReturn(Optional.of(product));
-	    when(storeRepository.findById(anyInt())).thenReturn(Optional.of(store));
-	    when(stockRepository.save(any(Stock.class))).thenReturn(new Stock(store, product, 10));
-		*/
-	    // Prepare request body
-	    //StockDao stockDao = new StockDao();
-	}
-
+ 
 
 }

@@ -7,16 +7,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.ibm.flaskstoreapi.model.Product;
 import com.ibm.flaskstoreapi.model.Stock;
-import com.ibm.flaskstoreapi.model.Store;
-import com.ibm.flaskstoreapi.model.DAO.StockDao;
-import com.ibm.flaskstoreapi.repository.ProductRepository;
 import com.ibm.flaskstoreapi.repository.StockRepository;
 import com.ibm.flaskstoreapi.repository.StoreRepository;
 import com.ibm.flaskstoreapi.service.StockService;
 
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 
 @Service
@@ -24,12 +19,10 @@ public class StockServiceImpl implements StockService{
 
 	private final StockRepository stockRepository;
 	private final StoreRepository storeRepository;
-	private final ProductRepository productRepository;
 
-	public StockServiceImpl(StockRepository stockRepository, StoreRepository storeRepository, ProductRepository productRepository) {
+	public StockServiceImpl(StockRepository stockRepository, StoreRepository storeRepository) {
 		this.stockRepository = stockRepository;
 		this.storeRepository = storeRepository;
-		this.productRepository = productRepository;
 	}
 
 	@Override
@@ -53,25 +46,18 @@ public class StockServiceImpl implements StockService{
 	}
 
 	@Override
-	public Stock addStockToStore(@Valid StockDao stockDao) {
-    	Optional<Stock> stockAlreadyExists = stockRepository.findByStore_StoreIdAndProduct_ProductId(stockDao.getStoreId(), stockDao.getProductId());
+	public Stock addStockToStore(@Valid Stock stock) {
+    	Optional<Stock> stockAlreadyExists = stockRepository.findByStore_StoreIdAndProduct_ProductId(stock.getStore().getStoreId(), stock.getProduct().getProductId());
     	if(stockAlreadyExists.isPresent())
-    		return updateProductInStore(stockDao);
+    		return updateProductInStore(stock);
 		
-    	Product product = productRepository.findById(stockDao.getProductId())
-    	        .orElseThrow(() -> new EntityNotFoundException("Product not found with id: " + stockDao.getProductId()));
-    	
-    	Store store = storeRepository.findById(stockDao.getStoreId())
-    	        .orElseThrow(() -> new EntityNotFoundException("Store not found with id: " + stockDao.getStoreId()));
-    	
-    	Stock stock = new Stock(store, product, stockDao.getQuantity());
-        return stockRepository.save(stock);
+       return stockRepository.save(stock);
 	}
 
 	@Override
-	public Stock updateProductInStore(@Valid StockDao stock) {
+	public Stock updateProductInStore(@Valid Stock stock) {
 	    try {
-	        Stock stockToBeUpdated = getStock(stock.getStoreId(), stock.getProductId());
+	        Stock stockToBeUpdated = getStock(stock.getStore().getStoreId(), stock.getProduct().getProductId());
 	        stockToBeUpdated.setQuantity(stock.getQuantity());
 	        stockRepository.save(stockToBeUpdated);
 	        return stockToBeUpdated;
@@ -81,8 +67,8 @@ public class StockServiceImpl implements StockService{
 	}
 
 	@Override
-	public String deleteProductFromStore(@Valid StockDao stockDao) {
-		Optional<Stock> stockToBeDeleted = stockRepository.findByStore_StoreIdAndProduct_ProductId(stockDao.getStoreId(), stockDao.getProductId());
+	public String deleteProductFromStore(@Valid Stock stock) {
+		Optional<Stock> stockToBeDeleted = stockRepository.findByStore_StoreIdAndProduct_ProductId(stock.getStore().getStoreId(), stock.getProduct().getProductId());
 		
 	    if (stockToBeDeleted.isPresent()) {
 	        stockRepository.delete(stockToBeDeleted.get());
