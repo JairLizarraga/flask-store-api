@@ -14,6 +14,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.ibm.flaskstoreapi.exception.InternalServerException;
+import com.ibm.flaskstoreapi.exception.product.DuplicateProductException;
+import com.ibm.flaskstoreapi.exception.product.ProductNotFoundException;
 import com.ibm.flaskstoreapi.model.Product;
 import com.ibm.flaskstoreapi.model.Stock;
 import com.ibm.flaskstoreapi.service.ProductService;
@@ -32,29 +35,31 @@ public class ProductController {
 
 	@GetMapping
 	public ResponseEntity<List<Product>> getProducts(){
-		try{
-			return ResponseEntity.ok(productService.getProducts());
-		} catch(Exception e) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
-		
+		return Optional.ofNullable(productService.getProducts())
+				.map(ResponseEntity::ok)
+				.orElseThrow(() -> new InternalServerException("Los productos no pueden ser encontrados debido a un error interno."));
 	}
 	
 	@GetMapping("/{productId}/")
 	public ResponseEntity<Product> getProductById(@PathVariable int productId) {
-		return productService
-				.getProductById(productId)
+		return Optional.ofNullable(productService.getProductById(productId))
+				.get()
 				.map(ResponseEntity::ok)
-				.orElse(ResponseEntity.notFound().build());
+				.orElseThrow(() -> new ProductNotFoundException("Producto con id " + productId + " no pudo ser encontrado."));
 	}
 	
 	@PostMapping("/")
 	public ResponseEntity<Product> addProduct(@Valid @RequestBody Product product) {
+		Optional<Product> productById = productService.getProductById(product.getProductId());
+		if(productById.isPresent()) {
+			throw new DuplicateProductException("Producto con id " + product.getProductId() + " duplicado.");			
+		}
+		
 	    try {
 	        Product savedProduct = productService.addProduct(product);
 	        return ResponseEntity.ok(savedProduct);
 	    } catch (RuntimeException e) {
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	        throw new InternalServerException("Ocurrió un error al tratar de guardar el producto");
 	    }
 	}
 	
@@ -71,19 +76,17 @@ public class ProductController {
 	                productService.addProduct(savedProduct);
 	                return ResponseEntity.ok("Updated successfully"); // Set the response body here
 	            })
-	            .orElse(ResponseEntity.notFound().build());
+	            .orElseThrow(() -> new ProductNotFoundException("Product with ID " + product.getProductId() + " not found"));
 	}
-
 
 	@DeleteMapping("/")
 	public ResponseEntity<String> deleteProduct(@Valid @RequestBody Product product) {
-		Optional<Product> productToBeDeleted = productService.getProductById(product.getProductId());
-		if(productToBeDeleted.isPresent()) {
-			productService.deleteProduct(productToBeDeleted.get());
-			return ResponseEntity.ok("Product with ID: " + product.getProductId() + " deleted");
-		} else {
-		    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Product with ID " + product.getProductId() + " not found");	
-		}		
+	    return productService.getProductById(product.getProductId())
+	        .map(productToBeDeleted -> {
+	            productService.deleteProduct(productToBeDeleted);
+	            return ResponseEntity.ok("Product with ID: " + product.getProductId() + " deleted");
+	        })
+	        .orElseThrow(() -> new ProductNotFoundException("Product with ID " + product.getProductId() + " not found"));
 	}
 	
 	@GetMapping("/test")
