@@ -18,11 +18,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig{
-
+	
     @Bean
     PasswordEncoder passwordEncoder() {
-        PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        return encoder;
+        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
     
     @Bean
@@ -39,9 +38,7 @@ public class WebSecurityConfig{
 
         return new InMemoryUserDetailsManager(user, admin);
     }
-    
 
-    @Bean
     SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(requests -> requests
                 .requestMatchers("/product/").permitAll()
