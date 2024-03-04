@@ -1,16 +1,16 @@
 package com.ibm.flaskstoreapi.service.impl;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.stereotype.Service;
-
 import com.ibm.flaskstoreapi.model.Product;
 import com.ibm.flaskstoreapi.repository.ProductRepository;
 import com.ibm.flaskstoreapi.service.ProductService;
-
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ProductServiceImpl implements ProductService{
@@ -27,38 +27,68 @@ public class ProductServiceImpl implements ProductService{
 	}
 
 	@Override
-	public Optional<Product> getProductById(int productId) {
-		return productRepository.findById(productId);
+	public Product getProductById(Integer productId) {
+		try {
+			Optional<Product> productById = productRepository.findById(productId);
+			if(productById.isPresent()){
+				return productById.get();
+			} else {
+				throw new EntityNotFoundException("Product with id " + productById + " not found");
+			}
+
+		} catch (IllegalArgumentException e) {
+			throw new IllegalArgumentException("Invalid product data: " + e.getMessage());
+		}
 	}
 
 	@Override
 	public Product addProduct(@Valid Product product) {
+		if(productRepository.existsById(product.getProductId())) {
+			throw new DataIntegrityViolationException("Product already exists in the data base with id: " + product.getProductId());
+		}
 		try {
 			return productRepository.save(product);
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to save product", e);
+		} catch (IllegalArgumentException e){
+			throw new IllegalArgumentException("Invalid product data: " + e.getMessage());
+		} catch (OptimisticLockingFailureException e){
+			throw new OptimisticLockingFailureException("Another update has occurred, please refresh and try again");
+		} catch (RuntimeException e) {
+			throw new RuntimeException("Failed to save product. Please try again later.", e);
 		}
 	}
 
 	@Override
-	public String updateProduct(@Valid Product product) {
+	public Product updateProduct(@Valid Product product) {
 		if(productRepository.existsById(product.getProductId())) {
-			productRepository.save(product);
-			return "Product with ID: " + product.getProductId() + " updated";
+			try {
+				return productRepository.save(product);
+			} catch (IllegalArgumentException e){
+				throw new IllegalArgumentException("Invalid product data: " + e.getMessage());
+			} catch (OptimisticLockingFailureException e){
+				throw new OptimisticLockingFailureException("Another update has occurred, please refresh and try again");
+			} catch (RuntimeException e) {
+				throw new RuntimeException("Failed to save product. Please try again later.", e);
+			}
+		} else {
+			throw new DataIntegrityViolationException("Product with ID: " + product.getProductId() + " does not exist in the database. Add it first.");
 		}
-		return "Product not found";
 	}
 
 	@Override
-	public String deleteProduct(@Valid Product product) {
+	public String deleteProduct(@Valid int productId) {
+		if(!productRepository.existsById(productId)){
+			throw new DataIntegrityViolationException("Nothing to delete");
+		}
 		try {
-			productRepository.deleteById(product.getProductId());
-			return "Product with ID: " + product.getProductId() + " deleted";
-	    } catch (EmptyResultDataAccessException e) {
-	        return "Product with ID " + product.getProductId() + " not found";
-	    } catch (Exception e) {
-	        return "Error deleting product: " + e.getMessage();
-	    }
+			productRepository.deleteById(productId);
+			return "Product with ID: " + productId + " deleted";
+	    }  catch (IllegalArgumentException e){
+			throw new IllegalArgumentException("Invalid product data: " + e.getMessage());
+		} catch (OptimisticLockingFailureException e){
+			throw new OptimisticLockingFailureException("Another update has occurred, please refresh and try again");
+		} catch (RuntimeException e) {
+			throw new RuntimeException("Failed to save product. Please try again later.", e);
+		}
 		
 	}
 

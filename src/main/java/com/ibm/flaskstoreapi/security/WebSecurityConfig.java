@@ -1,4 +1,4 @@
-package com.ibm.flaskstoreapi;
+package com.ibm.flaskstoreapi.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,7 +55,7 @@ public class WebSecurityConfig{
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
             response.setContentType("application/json");
             ObjectMapper mapper = new ObjectMapper();
-            String json = mapper.writeValueAsString(new ErrorMessage("Unauthorized", "Authentication failed: " + authException.getMessage()));
+            String json = mapper.writeValueAsString(new WebSecurityErrorMessage("Unauthorized", "Authentication failed: " + authException.getMessage()));
             response.getWriter().write(json);
     	};
     }
